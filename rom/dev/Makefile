@@ -41,6 +41,17 @@ build-emu:
 		--no-default-features \
 		--features "emu,cfi"
 
+# Build ROM with Adams Bridge (MLDSA87/MLKEM) selftests disabled.
+# Use this when targeting hardware with a defective Adams Bridge accelerator.
+build-no-adams-bridge:
+	cargo \
+		"--config=$(EXTRA_CARGO_CONFIG)" \
+		build \
+		--profile firmware \
+		--target=riscv32imc-unknown-none-elf \
+		--no-default-features \
+		--features "emu,cfi,no-adams-bridge-kat"
+
 build-fmc:
 	cargo \
 		"--config=$(EXTRA_CARGO_CONFIG)" \
@@ -161,6 +172,13 @@ build-rom:
 		--rom-with-log $(TARGET_DIR)/caliptra-rom.bin \
 		--fw /dev/null
 
+build-rom-no-adams-bridge:
+	cargo \
+		"--config=$(EXTRA_CARGO_CONFIG)" \
+		run -p caliptra-builder -- \
+		--rom-no-adams-bridge $(TARGET_DIR)/caliptra-rom-no-adams-bridge.bin \
+		--fw /dev/null
+
 run: build-emu build-fw-test-image build-rom
 	cargo \
 		"--config=$(EXTRA_CARGO_CONFIG)" \
@@ -170,6 +188,22 @@ run: build-emu build-fw-test-image build-rom
 		--req-idevid-csr \
 		--idevid-key-id-algo sha1 \
 		--rom $(TARGET_DIR)/caliptra-rom.bin \
+		--recovery-image-fw $(TARGET_DIR)/caliptra-rom-test-fw \
+		--device-lifecycle $(DEVICE_LIFECYCLE) \
+		--pqc-key-type $(PQC_KEY_TYPE) \
+		$(if $(filter production manufacturing,$(DEVICE_LIFECYCLE)),--mfg-pk-hash \
+			$$(dd if=$(TARGET_DIR)/caliptra-rom-test-fw bs=1 skip=12 count=1736 status=none | sha384sum | cut -d' ' -f1),)
+# See image/types/src/lib.rs ImageManifest for offsets and lengths of vendor_pub_key_info
+
+run-no-adams-bridge: build-fw-test-image build-rom-no-adams-bridge
+	cargo \
+		"--config=$(EXTRA_CARGO_CONFIG)" \
+		run \
+		-p caliptra-emu \
+		-- \
+		--req-idevid-csr \
+		--idevid-key-id-algo sha1 \
+		--rom $(TARGET_DIR)/caliptra-rom-no-adams-bridge.bin \
 		--recovery-image-fw $(TARGET_DIR)/caliptra-rom-test-fw \
 		--device-lifecycle $(DEVICE_LIFECYCLE) \
 		--pqc-key-type $(PQC_KEY_TYPE) \

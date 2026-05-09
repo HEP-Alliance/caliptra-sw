@@ -14,6 +14,8 @@ default = []
 # When building for ROM, skip AES KATs since ROM uses AesGcm::new() which runs its own KAT
 rom = ["caliptra-drivers/rom"]
 fips-test-hooks = ["caliptra-drivers/fips-test-hooks"]
+# Skip MLDSA87/MLKEM selftests to allow booting with a defective Adams Bridge accelerator
+no-adams-bridge-kat = []
 
 [dependencies]
 caliptra-drivers.workspace = true

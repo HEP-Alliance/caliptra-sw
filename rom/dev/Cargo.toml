@@ -94,6 +94,8 @@ fips-test-hooks = [
   "caliptra-image-verify/fips-test-hooks",
   "caliptra-kat/fips-test-hooks",
 ]
+# Skip Adams Bridge (MLDSA87/MLKEM) selftests; allows booting with a defective accelerator
+no-adams-bridge-kat = ["caliptra-kat/no-adams-bridge-kat"]
 
 [[bin]]
 name = "asm_tests"

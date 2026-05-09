@@ -115,8 +115,13 @@ pub fn execute_kat(env: &mut KatsEnv<'_, '_>) -> CaliptraResult<InitializedDrive
     cprintln!("[kat] LMS");
     LmsKat::default().execute(env.sha256, env.lms)?;
 
-    cprintln!("[kat] MLDSA87");
-    Mldsa87Kat::default().execute(env.mldsa87, env.trng)?;
+    #[cfg(not(feature = "no-adams-bridge-kat"))]
+    {
+        cprintln!("[kat] MLDSA87");
+        Mldsa87Kat::default().execute(env.mldsa87, env.trng)?;
+    }
+    #[cfg(feature = "no-adams-bridge-kat")]
+    cprintln!("[kat] MLDSA87 selftest SKIPPED (no-adams-bridge-kat)");
 
     cprintln!("[kat] --");
 

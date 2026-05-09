@@ -88,6 +88,14 @@ pub const ROM_FPGA_WITH_UART: FwId = FwId {
     features: &["emu", "fpga_realtime", "cfi"],
 };
 
+/// ROM with MLDSA87/MLKEM (Adams Bridge) selftests disabled.
+/// Use when targeting Caliptra hardware with a defective Adams Bridge accelerator.
+pub const ROM_WITH_UART_NO_ADAMS_BRIDGE: FwId = FwId {
+    crate_name: "caliptra-rom",
+    bin_name: "caliptra-rom",
+    features: &["emu", "cfi", "no-adams-bridge-kat"],
+};
+
 pub const FMC_WITH_UART: FwId = FwId {
     crate_name: "caliptra-fmc",
     bin_name: "caliptra-fmc",
@@ -629,6 +637,7 @@ pub const REGISTERED_FW: &[&FwId] = &[
     &ROM,
     &ROM_FPGA,
     &ROM_WITH_UART,
+    &ROM_WITH_UART_NO_ADAMS_BRIDGE,
     &ROM_FAKE_WITH_UART,
     &ROM_FAKE_WITH_UART_FPGA,
     &ROM_WITH_FIPS_TEST_HOOKS,
