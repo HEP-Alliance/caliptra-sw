@@ -191,6 +191,59 @@ Adams Bridge hardware block.
 
 ---
 
+## 6. DEVICE_LIFECYCLE — what it means and why Unprovisioned matters
+
+The lifecycle state is a fuse-programmed value that the ROM reads at boot to
+decide how strictly to enforce the security policy. It has nothing to do with
+PUF enrollment or TRNG bring-up — it is purely a gate on fuse-based checks.
+
+### Implications per state
+
+| Check | Unprovisioned | Manufacturing | Production |
+|---|---|---|---|
+| Vendor public key hash vs fuse | **skipped** | enforced | enforced |
+| PQC key type vs fuse | **skipped** | enforced | enforced |
+| Anti-rollback / SVN | **skipped** | enforced | enforced |
+| UDS (device secret) | all-zero | being written | burned |
+| CDI (derived secret) | deterministic / same on all chips | meaningful | meaningful |
+| UDS programming via mailbox | not allowed | **allowed** | not allowed |
+| Debug unlock mechanism | open | simple token | signed challenge-response |
+| `fake-rom` feature | allowed | allowed | rejected |
+
+### The fuse bank stub insight
+
+In Unprovisioned mode the ROM reads fuses, sees zeros, and **returns early
+from every fuse-based check without error**. Zero is the explicit
+"not yet provisioned" sentinel — it does not cause a fault, it causes a skip.
+
+This has a very useful consequence for hardware bring-up: **your fuse bank
+can be a stub that returns zero on all reads and the ROM will boot correctly**.
+No fuse array, no PUF, no TRNG needed to get a working boot. A tie-to-zero on
+the fuse interface is a valid integration strategy for a demonstrator.
+
+Similarly the TRNG is used during IDevID key generation (the device identity
+certificate path), but since IDevID/LDevID are PKI machinery that a
+demonstrator does not need, a broken or absent TRNG only affects those paths.
+The ROM will still boot, verify the LMS-signed firmware image, and hand off to
+FMC.
+
+The resulting hardware integration checklist for the HEP demonstrator:
+
+| Block | Status | Impact |
+|---|---|---|
+| Fuse bank | stub / tie-to-zero | none — Unprovisioned skips all fuse checks |
+| TRNG | open-source design / stub | none for boot; affects IDevID only |
+| PUF | not needed | UDS is zero, CDI is deterministic, acceptable for demonstrator |
+| Adams Bridge | absent from silicon | selftest skipped by `no-adams-bridge-kat` |
+
+The security properties this removes are well-defined and intentional:
+unique device identity, anti-rollback, and vendor key lock-in. The
+**functional** behaviour — boot, firmware verification, FMC/Runtime execution
+— is fully exercised. This is exactly the right scope for a tapeout
+demonstrator aimed at validating the open-source silicon toolchain.
+
+---
+
 ## Summary of artifacts
 
 | File | Description |
