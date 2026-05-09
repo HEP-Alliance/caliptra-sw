@@ -195,7 +195,11 @@ run: build-emu build-fw-test-image build-rom
 			$$(dd if=$(TARGET_DIR)/caliptra-rom-test-fw bs=1 skip=12 count=1736 status=none | sha384sum | cut -d' ' -f1),)
 # See image/types/src/lib.rs ImageManifest for offsets and lengths of vendor_pub_key_info
 
-run-no-adams-bridge: build-fw-test-image build-rom-no-adams-bridge
+# LMS-signed firmware + no-Adams-Bridge ROM.
+# Firmware image is signed with LMS (PQC_KEY_TYPE=3); ROM skips the MLDSA87/MLKEM
+# hardware selftest and verifies the image in pure software (no Adams Bridge needed).
+run-no-adams-bridge: build-rom-no-adams-bridge
+	$(MAKE) build-fw-test-image PQC_KEY_TYPE=3
 	cargo \
 		"--config=$(EXTRA_CARGO_CONFIG)" \
 		run \
@@ -206,7 +210,7 @@ run-no-adams-bridge: build-fw-test-image build-rom-no-adams-bridge
 		--rom $(TARGET_DIR)/caliptra-rom-no-adams-bridge.bin \
 		--recovery-image-fw $(TARGET_DIR)/caliptra-rom-test-fw \
 		--device-lifecycle $(DEVICE_LIFECYCLE) \
-		--pqc-key-type $(PQC_KEY_TYPE) \
+		--pqc-key-type 3 \
 		$(if $(filter production manufacturing,$(DEVICE_LIFECYCLE)),--mfg-pk-hash \
 			$$(dd if=$(TARGET_DIR)/caliptra-rom-test-fw bs=1 skip=12 count=1736 status=none | sha384sum | cut -d' ' -f1),)
 # See image/types/src/lib.rs ImageManifest for offsets and lengths of vendor_pub_key_info
