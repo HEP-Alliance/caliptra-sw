@@ -9,9 +9,19 @@ xtask-subsystem = "run --package xtask --features=fpga_subsystem --"
 RUST_MIN_STACK="16777216" # 16MB
 
 [target.riscv32imc-unknown-none-elf]
+# NOTE (HEP): `+unaligned-scalar-mem` was removed here. It tells LLVM the
+# target CPU handles misaligned scalar loads/stores in hardware -- true for
+# real Caliptra's VeeR EL2, NOT verified for the VexRiscv core this fork
+# targets. With it enabled, LLVM optimized some byte-array-to-word
+# conversions (e.g. `caliptra_drivers::array::u8_to_u32_be_impl`, used by
+# `Array4xN::from(&[u8; B])`) into a single unaligned `lw`, which on this
+# platform silently corrupted data instead of trapping or working correctly
+# -- root cause of the HMAC-512Kdf KAT failure investigated 2026-08-03/04.
+# Removing it forces safe byte-by-byte codegen everywhere, at a small,
+# global (not just no-adams-bridge builds) code-size/perf cost. See
+# README.SIGN-HEP.md for the full writeup.
 rustflags = [
   "-C", "target-feature=+relax",
-  "-C", "target-feature=+unaligned-scalar-mem",
   "-C", "target-feature=+zba",
   "-C", "target-feature=+zbb",
   "-C", "target-feature=+zbc",

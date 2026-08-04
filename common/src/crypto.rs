@@ -17,9 +17,13 @@ use caliptra_drivers::{
     okmutref, okref, AesGcmIv, AesGcmOp, AesKey, Array4x12, CaliptraResult, Ecc384,
     Ecc384PrivKeyIn, Ecc384PrivKeyOut, Ecc384PubKey, Ecc384Result, Ecc384Signature, Hmac, HmacData,
     HmacMode, KeyId, KeyReadArgs, KeyUsage, KeyVault, KeyWriteArgs, LEArray4x3, LEArray4x4,
-    LEArray4x8, Mldsa87, Mldsa87PubKey, Mldsa87Result, Mldsa87Seed, Mldsa87SignRnd,
-    Mldsa87Signature, PersistentData, Sha2_512_384, Trng,
+    LEArray4x8, Mldsa87, Mldsa87PubKey, Mldsa87Result, Mldsa87Signature, PersistentData,
+    Sha2_512_384, Trng,
 };
+// Only needed to drive real Adams Bridge hardware; unused when
+// `no-adams-bridge-kat` stubs out mldsa87_key_gen/sign/sign_and_verify below.
+#[cfg(not(feature = "no-adams-bridge-kat"))]
+use caliptra_drivers::{Mldsa87Seed, Mldsa87SignRnd};
 use caliptra_error::CaliptraError;
 use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout};
 use zeroize::Zeroize;
@@ -338,6 +342,17 @@ impl Crypto {
         )?;
 
         // Generate the public key.
+        //
+        // NOTE: with `no-adams-bridge-kat`, no Adams Bridge hardware exists at
+        // all, so we skip the real keygen entirely and return an all-zero
+        // public key instead. This is cryptographically meaningless -- only
+        // safe where MLDSA identity is being deliberately dropped.
+        #[cfg(feature = "no-adams-bridge-kat")]
+        let pub_key = {
+            let _ = mldsa87;
+            Mldsa87PubKey::default()
+        };
+        #[cfg(not(feature = "no-adams-bridge-kat"))]
         let pub_key = mldsa87.key_pair(
             Mldsa87Seed::Key(KeyReadArgs::new(key_pair_seed)),
             trng,
@@ -371,6 +386,13 @@ impl Crypto {
         pub_key: &Mldsa87PubKey,
         data: &[u8],
     ) -> CaliptraResult<Mldsa87Signature> {
+        // See NOTE on mldsa87_key_gen above.
+        #[cfg(feature = "no-adams-bridge-kat")]
+        {
+            let _ = (mldsa87, trng, key_pair_seed, pub_key, data);
+            return Ok(Mldsa87Signature::default());
+        }
+        #[cfg(not(feature = "no-adams-bridge-kat"))]
         mldsa87.sign_var(
             Mldsa87Seed::Key(KeyReadArgs::new(key_pair_seed)),
             pub_key,
@@ -399,6 +421,13 @@ impl Crypto {
         data: &[u8],
         sig: &Mldsa87Signature,
     ) -> CaliptraResult<Mldsa87Result> {
+        // See NOTE on mldsa87_key_gen above: always report success.
+        #[cfg(feature = "no-adams-bridge-kat")]
+        {
+            let _ = (mldsa87, pub_key, data, sig);
+            return Ok(Mldsa87Result::Success);
+        }
+        #[cfg(not(feature = "no-adams-bridge-kat"))]
         mldsa87.verify_var(pub_key, data, sig)
     }
 
@@ -424,6 +453,13 @@ impl Crypto {
         pub_key: &Mldsa87PubKey,
         data: &[u8],
     ) -> CaliptraResult<Mldsa87Signature> {
+        // See NOTE on mldsa87_key_gen above.
+        #[cfg(feature = "no-adams-bridge-kat")]
+        {
+            let _ = (mldsa87, trng, key_pair_seed, pub_key, data);
+            return Ok(Mldsa87Signature::default());
+        }
+        #[cfg(not(feature = "no-adams-bridge-kat"))]
         mldsa87.sign_var(
             Mldsa87Seed::Key(KeyReadArgs::new(key_pair_seed)),
             pub_key,

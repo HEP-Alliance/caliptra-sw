@@ -33,3 +33,10 @@ rom = ["caliptra-drivers/rom"]
 fmc = []
 runtime = []
 cfi = ["caliptra-drivers/cfi"]
+# Stub out MLDSA87 key generation/sign/verify to avoid touching Adams Bridge
+# hardware entirely (for SoCs with no Adams Bridge accelerator present at
+# all, as opposed to a merely-defective one). Key gen returns an all-zero
+# public key, sign returns an all-zero signature, verify always succeeds.
+# This makes MLDSA identity/signature data cryptographically meaningless --
+# only safe to use where MLDSA functionality is being deliberately dropped.
+no-adams-bridge-kat = []

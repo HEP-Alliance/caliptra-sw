@@ -94,8 +94,17 @@ fips-test-hooks = [
   "caliptra-image-verify/fips-test-hooks",
   "caliptra-kat/fips-test-hooks",
 ]
-# Skip Adams Bridge (MLDSA87/MLKEM) selftests; allows booting with a defective accelerator
-no-adams-bridge-kat = ["caliptra-kat/no-adams-bridge-kat"]
+# For SoCs with NO Adams Bridge (MLDSA87/MLKEM) hardware at all -- not just a
+# defective one. Skips the MLDSA87 boot-time KAT self-test
+# (caliptra-kat/no-adams-bridge-kat), AND stubs out real MLDSA87 key
+# generation/signing/verification in the DICE identity layers
+# (caliptra-common/no-adams-bridge-kat, see common/src/crypto.rs) so IDevID/
+# LDevID/FMC-alias derivation never touches the missing hardware. MLDSA
+# identity/signature data produced under this flag is cryptographically
+# meaningless (all-zero keys, all-zero signatures, verify always succeeds) --
+# only safe where MLDSA functionality is being deliberately dropped, not for
+# a merely-defective accelerator. See README.SIGN-HEP.md section 5.
+no-adams-bridge-kat = ["caliptra-kat/no-adams-bridge-kat", "caliptra-common/no-adams-bridge-kat"]
 
 [[bin]]
 name = "asm_tests"
