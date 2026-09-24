@@ -172,12 +172,14 @@ build-rom:
 		--rom-with-log $(TARGET_DIR)/caliptra-rom.bin \
 		--fw /dev/null
 
+# [hep] No --fw here: the FW bundle is built separately by build-fw-test-image,
+# and asking caliptra-builder for one makes it link the real caliptra-fmc, which
+# currently overflows ICCM .rodata and fails the build.
 build-rom-no-adams-bridge:
 	cargo \
 		"--config=$(EXTRA_CARGO_CONFIG)" \
 		run -p caliptra-builder -- \
-		--rom-no-adams-bridge $(TARGET_DIR)/caliptra-rom-no-adams-bridge.bin \
-		--fw /dev/null
+		--rom-no-adams-bridge $(TARGET_DIR)/caliptra-rom-no-adams-bridge.bin
 
 run: build-emu build-fw-test-image build-rom
 	cargo \

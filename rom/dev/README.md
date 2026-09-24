@@ -155,13 +155,13 @@ It is the unsigned portion of the manifest. Preamble contains the signing public
 | Active ECC Key Index | 4 | Public Key Hash Index for the active ECC key |
 | Active ECC Key | 96 | ECC P-384 public key used to verify the Firmware Manifest Header Signature <br> **X-Coordinate:** Public Key X-Coordinate (48 bytes, big endian) <br> **Y-Coordinate:** Public Key Y-Coordinate (48 bytes, big endian) |
 | Active LMS or MLDSA Key Index | 4 | Public Key Hash Index for the active LMS or MLDSA key |
-| Active LMS or MLDSA Key | 2592 | LMS public key (48 bytes + 2544 unused bytes) used to verify the Firmware Manifest Header Signature. <br> **tree_type:** LMS Algorithm Type (4 bytes, big endian) Must equal 12. <br> **otstype:** LM-OTS Algorithm Type (4 bytes, big endian) Must equal 7. <br> **id:**  (16 bytes) <br> **digest:**  (24 bytes) <br><br>**OR**<br><br>MLDSA-87 public key used to verify the Firmware Manifest Header Signature. <br> (2592 bytes, little endian)|
+| Active LMS or MLDSA Key | 2592 | LMS public key (48 bytes + 2544 unused bytes) used to verify the Firmware Manifest Header Signature. <br> **tree_type:** LMS Algorithm Type (4 bytes, big endian) Must equal 10. <br> **otstype:** LM-OTS Algorithm Type (4 bytes, big endian) Must equal 7. <br> **id:**  (16 bytes) <br> **digest:**  (24 bytes) <br><br>**OR**<br><br>MLDSA-87 public key used to verify the Firmware Manifest Header Signature. <br> (2592 bytes, little endian)|
 | Manufacturer ECC Signature | 96 | Manufacturer ECC P-384 signature of the Firmware Manifest header hashed using SHA2-384. <br> **R-Coordinate:** Random Point (48 bytes) <br> **S-Coordinate:** Proof (48 bytes) |
-| Manufacturer LMS or MLDSA Signature | 4628 | Manufacturer LMS signature (1620 bytes + 3008 unused bytes) of the Firmware Manifest header hashed using SHA2-384. <br> **q:** Leaf of the Merkle tree where the OTS public key appears (4 bytes) <br> **ots:** Lmots Signature (1252 bytes) <br> **tree_type:** Lms Algorithm Type (4 bytes) <br> **tree_path:** Path through the tree from the leaf associated with the LM-OTS signature to the root. (360 bytes) <br><br>**OR**<br><br> Vendor MLDSA-87 signature of the Firmware Manifest header hashed using SHA2-512 (4627 bytes + 1 Reserved byte, little endian)|
+| Manufacturer LMS or MLDSA Signature | 4628 | Manufacturer LMS signature (1380 bytes + 3248 unused bytes) of the Firmware Manifest header hashed using SHA2-384. <br> **q:** Leaf of the Merkle tree where the OTS public key appears (4 bytes) <br> **ots:** Lmots Signature (1252 bytes) <br> **tree_type:** Lms Algorithm Type (4 bytes) <br> **tree_path:** Path through the tree from the leaf associated with the LM-OTS signature to the root. (120 bytes) <br><br>**OR**<br><br> Vendor MLDSA-87 signature of the Firmware Manifest header hashed using SHA2-512 (4627 bytes + 1 Reserved byte, little endian)|
 | Owner ECC Public Key | 96 | ECC P-384 public key used to verify the Firmware Manifest Header Signature. <br> **X-Coordinate:** Public Key X-Coordinate (48 bytes) <br> **Y-Coordinate:** Public Key Y-Coordinate (48 bytes)|
 | Owner LMS or MLDSA Public Key | 2592 | LMS public key (48 bytes + 2544 unused bytes) used to verify the Firmware Manifest Header Signature. <br> **tree_type:** LMS Algorithm Type (4 bytes) <br> **otstype:** LMS Ots Algorithm Type (4 bytes) <br> **id:**  (16 bytes) <br> **digest:**  (24 bytes) <br><br>**OR**<br><br>MLDSA-87 public key used to verify the Firmware Manifest Header Signature. <br> (2592 bytes, little endian)|
 | Owner ECC Signature | 96 | Manufacturer ECC P-384 signature of the Firmware Manifest header hashed using SHA2-384. <br> **R-Coordinate:** Random Point (48 bytes) <br> **S-Coordinate:** Proof (48 bytes) |
-| Owner LMS or MLDSA Signature | 4628 | Owner LMS signature (1620 bytes + 3008 unused bytes) of the Firmware Manifest header hashed using SHA2-384. <br> **q:** Leaf of the Merkle tree where the OTS public key appears (4 bytes) <br> **ots:** Lmots Signature (1252 bytes) <br> **tree_type:** Lms Algorithm Type (4 bytes) <br> **tree_path:** Path through the tree from the leaf associated with the LM-OTS signature to the root. (360 bytes) <br><br>**OR**<br><br> Owner MLDSA-87 signature of the Firmware Manifest header hashed using SHA2-512 (4627 bytes + 1 Reserved byte, little endian) |
+| Owner LMS or MLDSA Signature | 4628 | Owner LMS signature (1380 bytes + 3248 unused bytes) of the Firmware Manifest header hashed using SHA2-384. <br> **q:** Leaf of the Merkle tree where the OTS public key appears (4 bytes) <br> **ots:** Lmots Signature (1252 bytes) <br> **tree_type:** Lms Algorithm Type (4 bytes) <br> **tree_path:** Path through the tree from the leaf associated with the LM-OTS signature to the root. (120 bytes) <br><br>**OR**<br><br> Owner MLDSA-87 signature of the Firmware Manifest header hashed using SHA2-512 (4627 bytes + 1 Reserved byte, little endian) |
 | Reserved | 8 | Reserved 8 bytes |
 <br>
 
@@ -1392,52 +1392,52 @@ Each LMS public key is a 48-byte struct: `tree_type` (u32), `otstype` (u32), `id
 
 **LMS Key 0:**
 ```
-tree_type=0x0000000c, otstype=0x00000007
+tree_type=0x0000000a, otstype=0x00000007
 id:     4908a17b cadb1829 1e289058 d5a8e3e8
-digest: 64ad3eb8 be6864f1 7ccda38b de35edaa 6c0da527 645407c6
+digest: c2ef9d81 cbd7fb3f 5af8d5bc 5745fddd d1d6f6dd 335bb614
 
-Serialized (48 bytes): 0000000c 00000007 4908a17b cadb1829 1e289058 d5a8e3e8
-                        64ad3eb8 be6864f1 7ccda38b de35edaa 6c0da527 645407c6
-SHA384 (standard):       fc2c1b6f 56f732d1 fd876f3f ef757cbb a2b1c64b cc148298
-                          d7508262 4bdf27cb 23d6b5b6 7169c46f 50b7fc19 92068fec
-SHA384 (reversed-dword): 6f1b2cfc d132f756 3f6f87fd bb7c75ef 4bc6b1a2 988214cc
-                          628250d7 cb27df4b b6b5d623 6fc46971 19fcb750 ec8f0692
+Serialized (48 bytes): 0000000a 00000007 4908a17b cadb1829 1e289058 d5a8e3e8
+                        c2ef9d81 cbd7fb3f 5af8d5bc 5745fddd d1d6f6dd 335bb614
+SHA384 (standard):       410e7020 2af8aa07 70ec210d faec5cca 5f6798e7 8e3c2fc1
+                          4d360507 701aa55a 35d50787 a863f2d5 cf97f649 cc6c955d
+SHA384 (reversed-dword): 20700e41 07aaf82a 0d21ec70 ca5cecfa e798675f c12f3c8e
+                          0705364d 5aa51a70 8707d535 d5f263a8 49f697cf 5d956ccc
 ```
 
 **LMS Key 1:**
 ```
-tree_type=0x0000000c, otstype=0x00000007
+tree_type=0x0000000a, otstype=0x00000007
 id:     7cb5369d 64e4281d 046e977c 70d4d0a3
-digest: 8ea4701d adf7d700 0564b7d6 1d1c9587 9dd6475c 9c3aae0b
+digest: 41fecc24 2cad0031 78aac967 492dd64d 481b5e95 6967c309
 
-SHA384 (standard):       7b5811fd 8d2b0cf8 9851f12d d2a7c239 f4f3abc5 d928dcc0
-                          3b4b891d abbdc67f c7b88436 432e1544 a408bc9c bb503f6b
-SHA384 (reversed-dword): fd11587b f80c2b8d 2df15198 39c2a7d2 c5abf3f4 c0dc28d9
-                          1d894b3b 7fc6bdab 3684b8c7 44152e43 9cbc08a4 6b3f50bb
+SHA384 (standard):       cdcd89c8 f380fb7f 80560fe5 814b39df 732cdea5 ed0a3fdb
+                          a167d432 9304bfa2 96bef12c 7fc70da6 e5de6689 ececa00c
+SHA384 (reversed-dword): c889cdcd 7ffb80f3 e50f5680 df394b81 a5de2c73 db3f0aed
+                          32d467a1 a2bf0493 2cf1be96 a60dc77f 8966dee5 0ca0ecec
 ```
 
 **LMS Key 2:**
 ```
-tree_type=0x0000000c, otstype=0x00000007
+tree_type=0x0000000a, otstype=0x00000007
 id:     2bbb4b72 c5b41e05 d2fabe76 f41704bd
-digest: dcb53f96 24d4c7b3 c9ae4d4c 0e41e08e 3b159396 0fe6a277
+digest: 0f4ac829 85422551 cbe4191d 3e8f0dfd d9640650 633b2418
 
-SHA384 (standard):       7e08a494 6933d35a 42c0d7b0 0236b10b db14c100 3f82f6a9
-                          7d401cb8 e420a7fa 5aab12b3 c4e96bec 49aec770 225a8f88
-SHA384 (reversed-dword): 94a4087e 5ad33369 b0d7c042 0bb13602 00c114db a9f6823f
-                          b81c407d faa720e4 b312ab5a ec6be9c4 70c7ae49 888f5a22
+SHA384 (standard):       b9541ab8 13ca7498 6e031b35 11822eb7 a7218fc1 37e177f8
+                          5ffc1104 63c5dcfe 237a41be cf883d77 cedd5871 c1072222
+SHA384 (reversed-dword): b81a54b9 9874ca13 351b036e b72e8211 c18f21a7 f877e137
+                          0411fc5f fedcc563 be417a23 773d88cf 7158ddce 222207c1
 ```
 
 **LMS Key 3:**
 ```
-tree_type=0x0000000c, otstype=0x00000007
+tree_type=0x0000000a, otstype=0x00000007
 id:     42cba2e5 575b5235 7ea7aead ef54074c
-digest: 5aa60e27 69251599 3ae8e21f 27ccdded 8ffcd3d2 8efbdec2
+digest: cff4e940 bd8b4d43 16d30ec7 b2e0e7ff b525b7b5 a7122bf8
 
-SHA384 (standard):       d3734fbc ee2893a3 b1b6519b 6ec78fb8 d7425327 cde1f7aa
-                          23012c64 c635219f d4ab1c4d 1b023252 00042884 2e463dbb
-SHA384 (reversed-dword): bc4f73d3 a39328ee 9b51b6b1 b88fc76e 275342d7 aaf7e1cd
-                          642c0123 9f2135c6 4d1cabd4 5232021b 84280400 bb3d462e
+SHA384 (standard):       cc2ca035 678d403c b15ece3e 98997ce5 fca4d574 c2b7d7c4
+                          1571af3f b21ac5eb 5b3667d6 6b99d6b8 b9e3132d 433c72f0
+SHA384 (reversed-dword): 35a02ccc 3c408d67 3ece5eb1 e57c9998 74d5a4fc c4d7b7c2
+                          3faf7115 ebc51ab2 d667365b b8d6996b 2d13e3b9 f0723c43
 ```
 
 #### Step 3: Build the ECC key descriptor (196 bytes)
@@ -1473,13 +1473,13 @@ Total: 4 + (32 × 48) = 1540 bytes
 Input = ECC descriptor (196 bytes) || PQC descriptor (1540 bytes) = 1736 bytes
 
 SHA384 (standard byte order):
-  b17ca877 666657cc d100e692 6c7206b6 0c995cb6 8992c6c9
-  baefce72 8af05441 dee1ff41 5adfc187 e1e4edb4 d3b2d909
+  e60ec269 6dd1be0d 5ce61dde 3185fbac 581dfec1 3c405493
+  a502ba04 9e25be45 95e29e3d ae4f4999 62206169 273ba0cf
 
 As [u32; 12] fuse register value:
-  [0xb17ca877, 0x666657cc, 0xd100e692, 0x6c7206b6,
-   0x0c995cb6, 0x8992c6c9, 0xbaefce72, 0x8af05441,
-   0xdee1ff41, 0x5adfc187, 0xe1e4edb4, 0xd3b2d909]
+  [0xe60ec269, 0x6dd1be0d, 0x5ce61dde, 0x3185fbac,
+   0x581dfec1, 0x3c405493, 0xa502ba04, 0x9e25be45,
+   0x95e29e3d, 0xae4f4999, 0x62206169, 0x273ba0cf]
 ```
 
 ### Computing public key hashes: MLDSA step-by-step example
@@ -1596,14 +1596,14 @@ Using the test keys from `image/fake-keys/src/lib.rs`:
 
 | Hash | PQC Type | Standard byte order (hex) |
 |------|----------|---------------------------|
-| Vendor PK descriptor hash | LMS (type 3) | `b17ca877666657ccd100e6926c7206b60c995cb68992c6c9baefce728af05441dee1ff415adfc187e1e4edb4d3b2d909` |
+| Vendor PK descriptor hash | LMS (type 3) | `e60ec2696dd1be0d5ce61dde3185fbac581dfec13c405493a502ba049e25be4595e29e3dae4f499962206169273ba0cf` |
 | Vendor PK descriptor hash | MLDSA (type 1) | `30399676a17e3e973677b3ff862f4bf2d1932d884778453c376fe00dc93fb8aa0770f3ebf3411a0853e9c57ece8a2980` |
-| Owner PK hash | LMS (type 3) | `1b179390e4e6c44422ed553e256c7d675cd93190cb49d88d485aa4ef3906cd492ab3ee3d3ba5f2c990ad13390fed4de5` |
+| Owner PK hash | LMS (type 3) | `fe97701e60e8ee5df7854e307c97f97d307bfc6beb9ad53b669fb48aac870ee60d773098e6dd0c506c3094c261ebca6e` |
 | Owner PK hash | MLDSA (type 1) | `48afdb073c5e0d4ee46490468ef81f2cf57249b6e76a28f5fca4de696a7d3e2ed3efc4e6774318543e95307a54988bd7` |
 
 To convert any of these standard byte order hashes to the `[u32; 12]` fuse register format, group
 the hex string into 8-character (4-byte) chunks and interpret each as a 32-bit word:
-- `b17ca877666657cc...` → `[0xb17ca877, 0x666657cc, 0xd100e692, ...]`
+- `e60ec2696dd1be0d...` → `[0xe60ec269, 0x6dd1be0d, 0x5ce61dde, ...]`
 
 #### Python script to compute vendor and owner PK hashes
 

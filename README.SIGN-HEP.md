@@ -314,3 +314,60 @@ demonstrator aimed at validating the open-source silicon toolchain.
 | `target/.../firmware/vnd-lms-priv-key-0.pem` | LMS vendor signing key (keep safe) |
 | `target/.../firmware/own-lms-priv-key.pem` | LMS owner signing key (keep safe) |
 | `target/.../caliptra-rom-test-fw` | Signed firmware image |
+
+---
+
+## 6. LMS parameters (H5)
+
+This fork signs with **LMS-SHA256-N24-H5 / LMOTS-SHA256-N24-W4** (tree type `10`,
+OTS type `7`), not the upstream H15 tree. The constants live in
+`image/types/src/lib.rs`:
+
+```rust
+pub const IMAGE_LMS_KEY_HEIGHT: usize = 5;
+pub const IMAGE_LMS_TREE_TYPE: LmsAlgorithmType = LmsAlgorithmType::LmsSha256N24H5;
+```
+
+### Why
+
+The image generator (`image/crypto/src/lib.rs`) only computes a real LM-OTS leaf
+for trees of height <= 10 (`LMS_TREE_GEN_SUPPORTED_FULL_HEIGHT`). At H15 it
+computes a real leaf **only at q = 5** (`SUPPORTED_LMS_Q_VALUE`) and zero-fills
+the other 32767 leaves, so the H15 "tree" is mostly padding and exactly one leaf
+is ever usable. At H5 the full 32-leaf tree is built, so every q is a genuine
+one-time key.
+
+The signer still hardcodes q = 5 (`OsslCrypto::lms_sign`); that was left alone,
+it just now points at a real leaf.
+
+### What this touches
+
+The LMS algorithm itself (`drivers/src/lms.rs`) is **unchanged**. Only the
+compile-time tree height changed, plus the three call sites that used the
+non-generic `Lms::verify_lms_signature_cfi()`, which is hardcoded to
+`LmsSignature<6, 51, 15>`. They now call `verify_lms_signature_cfi_generic()`:
+
+- `common/src/verifier.rs` (ROM/FMC image verification)
+- `runtime/src/set_auth_manifest.rs`
+- `rom/dev/src/flow/fake.rs`
+
+The LMS KAT (`kat/src/lms_kat.rs`) still uses its own H15 RFC 8554 test vector
+through the non-generic entry point and is untouched.
+
+### Manifest impact
+
+**None on layout.** The LMS signature lives inside the fixed 4628-byte
+`ImagePqcSignature` field, so the shorter H5 signature (1380 bytes instead of
+1620 -- `tree_path` is 5 x 24 rather than 15 x 24) just leaves more zero padding.
+Image and manifest offsets are unchanged.
+
+**The ROM must be rebuilt and reflashed**, because it verifies against the
+compile-time H. An H15-era ROM rejects an H5 signature with
+`DRIVER_LMS_INVALID_TREE_HEIGHT`, and vice versa.
+
+### Test key hashes
+
+The baked-in LMS public keys in `image/fake-keys/src/lib.rs` were regenerated for
+H5 (same `id` and `seed`, new `digest`), as were the documented hash values in
+`rom/dev/README.md`. `image/fake-keys/tests/lms_keys_match.rs` re-derives each
+public key from its private key and guards against them drifting apart again.

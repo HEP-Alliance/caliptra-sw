@@ -94,7 +94,7 @@ impl SetAuthManifestCmd {
         for i in 0..digest.len() {
             message[i * 4..][..4].copy_from_slice(&digest[i].to_be_bytes());
         }
-        Lms::default().verify_lms_signature_cfi(sha256, &message, pub_key, sig)
+        Lms::default().verify_lms_signature_cfi_generic(sha256, &message, pub_key, sig)
     }
 
     fn verify_vendor_signed_data(

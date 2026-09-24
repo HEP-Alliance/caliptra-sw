@@ -342,7 +342,10 @@ impl ImageVerificationEnv for &mut FirmwareImageVerificationEnv<'_, '_, '_> {
         for i in 0..digest.len() {
             message[i * 4..][..4].copy_from_slice(&digest[i].to_be_bytes());
         }
-        Lms::default().verify_lms_signature_cfi(self.sha256, &message, pub_key, sig)
+        // [hep] The non-generic verify_lms_signature_cfi() is hardcoded to
+        // LmsSignature<6, 51, 15>; ImageLmsSignature is now H5, so go through the
+        // generic entry point. Same code path, just a different monomorphization.
+        Lms::default().verify_lms_signature_cfi_generic(self.sha256, &message, pub_key, sig)
     }
 
     fn mldsa87_verify(

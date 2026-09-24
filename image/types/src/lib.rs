@@ -66,13 +66,17 @@ pub const SHA384_DIGEST_BYTE_SIZE: usize = 48;
 pub const SHA512_DIGEST_WORD_SIZE: usize = 16;
 pub const SHA512_DIGEST_BYTE_SIZE: usize = 64;
 pub const IMAGE_LMS_OTS_P_PARAM: usize = 51;
-pub const IMAGE_LMS_KEY_HEIGHT: usize = 15;
+pub const IMAGE_LMS_KEY_HEIGHT: usize = 5;
 pub const IMAGE_BYTE_SIZE: usize = 256 * 1024;
 /// All generated image artifacts (FW bundle, SoC manifest) must be a multiple of this.
 /// This is a hardware requirement: recovery images must be a multiple of 256 bytes in length.
 pub const IMAGE_ALIGNMENT: usize = 256;
-// LMS-SHA192-H15
-pub const IMAGE_LMS_TREE_TYPE: LmsAlgorithmType = LmsAlgorithmType::LmsSha256N24H15;
+// LMS-SHA192-H5
+// [hep] Reduced from H15 to H5: at H15 the image-generator only computes a real
+// OTS leaf at q=5 (see LMS_TREE_GEN_SUPPORTED_FULL_HEIGHT in caliptra-image-crypto),
+// so the tree is mostly zero-padded and only one leaf is ever usable. H5 is small
+// enough that the generator builds the full 32-leaf tree, so every q is signable.
+pub const IMAGE_LMS_TREE_TYPE: LmsAlgorithmType = LmsAlgorithmType::LmsSha256N24H5;
 // LMOTS-SHA192-W4
 pub const IMAGE_LMS_OTS_TYPE: LmotsAlgorithmType = LmotsAlgorithmType::LmotsSha256N24W4;
 pub const IMAGE_MANIFEST_BYTE_SIZE: usize = core::mem::size_of::<ImageManifest>();
