@@ -91,6 +91,8 @@ slow_tests = []
 flash-boot = []
 verilator = ["caliptra-hw-model/verilator"]
 fips_self_test = []
+# [hep] stub MLDSA identity crypto (common/src/crypto.rs) for SoCs without Adams Bridge
+no-adams-bridge-kat = ["caliptra-common/no-adams-bridge-kat"]
 cfi = [
     "caliptra-image-types/cfi",
     "caliptra-image-verify/cfi",
