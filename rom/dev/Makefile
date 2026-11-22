@@ -140,6 +140,49 @@ build-fw-image: gen-certs build-fmc build-rt
 		--out $(TARGET_DIR)/caliptra-fw \
 		--print-hashes
 
+# [hep] Production FMC + Runtime for SoCs without Adams Bridge: MLDSA identity
+# crypto stubbed via no-adams-bridge-kat (as in build-rom-no-adams-bridge).
+# Without the stub the FMC overflows ICCM .rodata by 568 bytes and would hang
+# on the missing Adams Bridge at its first mldsa87_key_gen.
+build-fw-image-no-adams-bridge: gen-certs
+	cargo \
+		"--config=$(EXTRA_CARGO_CONFIG)" \
+		build \
+		--profile firmware \
+		--manifest-path ../../fmc/Cargo.toml \
+		--target=riscv32imc-unknown-none-elf \
+		--no-default-features \
+		--features emu,riscv,cfi,no-adams-bridge-kat \
+		--bin caliptra-fmc
+	cargo \
+		"--config=$(EXTRA_CARGO_CONFIG)" \
+		build \
+		--profile firmware \
+		--manifest-path ../../runtime/Cargo.toml \
+		--target=riscv32imc-unknown-none-elf \
+		--no-default-features \
+		--features emu,riscv,cfi,no-adams-bridge-kat \
+		--bin caliptra-runtime
+	cargo \
+		"--config=$(EXTRA_CARGO_CONFIG)" \
+		run \
+		--manifest-path ../../image/app/Cargo.toml \
+		-- \
+		create \
+		--pqc-key-type $(PQC_KEY_TYPE) \
+		--key-config $(TARGET_DIR)/keys.toml \
+		--ecc-pk-idx 1 \
+		--pqc-pk-idx 0 \
+		--fmc $(TARGET_DIR)/caliptra-fmc \
+		--fmc-version 0 \
+		--fmc-rev $(GIT_REV) \
+		--rt $(TARGET_DIR)/caliptra-runtime \
+		--rt-version 0 \
+		--rt-rev $(GIT_REV) \
+		--fw-svn 0 \
+		--out $(TARGET_DIR)/caliptra-fw-no-adams-bridge \
+		--print-hashes
+
 bloat: build
 	 cargo \
 		"--config=$(EXTRA_CARGO_CONFIG)" \

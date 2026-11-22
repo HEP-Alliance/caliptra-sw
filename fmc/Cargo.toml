@@ -40,6 +40,8 @@ openssl.workspace = true
 default = ["std", "cfi"]
 emu = ["caliptra-common/emu", "caliptra-drivers/emu"]
 fake-fmc = []
+# [hep] stub MLDSA identity crypto (common/src/crypto.rs) for SoCs without Adams Bridge
+no-adams-bridge-kat = ["caliptra-common/no-adams-bridge-kat"]
 fpga_realtime = ["caliptra-drivers/fpga_realtime", "caliptra-hw-model/fpga_realtime"]
 fpga_subsystem = ["caliptra-drivers/fpga_subsystem", "caliptra-hw-model/fpga_subsystem"]
 itrng = ["caliptra-hw-model/itrng"]
